@@ -1,0 +1,110 @@
+{
+  "name": "Telegram + AI chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "telegram-ai",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5dbbab6c-e669-4a7b-88d8-bb12ecba9840",
+      "name": "Webhook",
+      "webhookId": "245c501f-f2f8-4252-830a-8d16844515b9"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1?wait_for_model=true",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer <ADD_YOUR_TOKEN_HERE>"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"inputs\": \"You are a helpful assistant. {{ $json.body.message.text }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "de0a7548-d752-4575-b27a-06b7047c1075",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Webhook\"].json.body.message.chat.id }}",
+        "text": "={{ $json[0]?.generated_text || $json[0]?.text || \"🤖 AI didn’t respond properly.\" }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "a8b22997-f9e9-46ff-84fb-fac4fd9e65d9",
+      "name": "Telegram",
+      "webhookId": "3b1e3890-12d7-4dea-9915-ef9f092c1970",
+      "credentials": {
+        "telegramApi": {
+          "id": "O6q7AvJv9eZgk7zE",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7cf1cd57-a6bd-44fb-8536-d552e22d828d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8629d3359e346adffbf9ae6feede0f2af6f2aac86b0926e22e29ecafe1d34226"
+  },
+  "id": "UVA2Nakl9mFbyADP",
+  "tags": []
+}
